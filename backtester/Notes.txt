@@ -1,0 +1,45 @@
+Setup remove delisted stock feature
+    transfer unrealized gain/loss to realized gain/loss
+
+setup updates to unrealized and realized gain/loss
+
+determine how to include short positions in portfolio value
+
+
+assets = {'Cash':{'value':1000},
+
+stock:{'value':2000,'quantity':30,'avg_price':66.66, 'initial trade price':30,'most recent trade price':80,'initial trade date':01/01/2000,'most recent trade date':04/20/2020,'intial quantity traded':10,'most recent quantity traded':40,'intial value traded':1000
+'most recent value traded': 1000,'current pnl':40}
+
+
+create date iter
+reset portfolio
+reset account
+create transaction series
+create pedning order series
+on each day in date index
+    update data feed
+    update account (to remove delisted assets)
+    update portfolio (to remove delisted assets)
+    scan and execute pending orders at market open
+    update account using market open prices
+    update portfolio using market open prices
+    scan and execute pending stop or limit orders at their corresponding prices
+    update account with stop/limit order prices
+    update portfolio with stop/limit order prices
+    scan and execute pending orders for market close prices
+    update account using market closing prices
+    update portfolio using market close prices
+    run strategy logic (all orders from this will be executed the next bar)
+
+
+
+
+Assets: Cash, 30000
+Liabilities: CDX, 2000
+Equity: Unrealized Earnings, 1000, Realized Earnings, 27000
+
+Assets: Cash, 28000
+
+
+
