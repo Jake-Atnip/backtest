@@ -1,5 +1,5 @@
 # backtest
-In progress. Python backtester dependent soley on pandas and numpy.
+In progress. Python backtester dependent soley on pandas and numpy. Right now this backtester is meant for equities and currencies.
 
 To do list:
 1. Improve documentation
