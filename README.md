@@ -1,4 +1,4 @@
-# backtest
+# backtest alpha 1.0.0
 In progress. Python backtester dependent soley on pandas and numpy. Right now this backtester is meant for equities and currencies.
 
 To do list:
