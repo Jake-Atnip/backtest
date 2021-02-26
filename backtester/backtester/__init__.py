@@ -1,4 +1,5 @@
-'''Author: Jacob Atnip'''
+'''Copyright (C) 2021 Jacob Atnip'''
+'''Please read license before use'''
 from backtester.backtest import Optimize
 from backtester.backtest import Analysis
 from backtester.backtest import Strategy
