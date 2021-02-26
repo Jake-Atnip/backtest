@@ -8,3 +8,4 @@ To do list:
 4. Add limit and stop orders
 5. Cythonize code to improve execution time
 6. Add flowchart as a form of "visual" documentation
+7. Add method for loading pandas series containing alternate data (i.e. fundamentals)
