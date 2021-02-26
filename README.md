@@ -7,3 +7,4 @@ To do list:
 3. Consider alternative data structure for historical data
 4. Add limit and stop orders
 5. Cythonize code to improve execution time
+6. Add flowchart as a form of "visual" documentation
