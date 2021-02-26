@@ -1,4 +1,5 @@
-'''Author: Jacob Atnip'''
+'''Copyright (C) 2021 Jacob Atnip'''
+'''Please read license before use'''
 import pandas as pd
 from copy import deepcopy
 from tqdm import tqdm
