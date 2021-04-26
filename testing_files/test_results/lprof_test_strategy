@@ -1,0 +1,1095 @@
+Timer unit: 1e-06 s
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: create_optimization_table at line 10
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    10                                               def create_optimization_table(self,par1,par1_range,par2,par2_range,strat_name,data_file_path,cash):
+    11                                           
+    12                                                   ###This method needs further testing before reliable use###
+    13                                           
+    14                                                   '''Creates 3 tables: A CAGR table, Max Drawdown (MDD) table, and a CAGR/MDD table. The row of each table
+    15                                                   represents a value for the first parameter and each column represents a value for the second parameter.
+    16                                                   Values in the CAGR table represent the CAGR for a strategy with that particular combination of values for
+    17                                                   parameter 1 and parameter 2
+    18                                           
+    19                                                   Inputs:
+    20                                           
+    21                                                   par1 (string): name of the first parameter
+    22                                                   par1_range (range object): range of values to test for parameter 1
+    23                                                   par2 (string): name of the seconf parameter
+    24                                                   par2_range (range object): range of values to test for parameter 2
+    25                                                   strat_name (string): name of strategy
+    26                                                   data_file_path (file path): file path for data to test on
+    27                                                   cash (float): amount of cash to start backtest with'''
+    28                                                   
+    29                                                   #determines number of data points to load for each point in time during the backtest
+    30                                                   bars_to_load = max(max(par1_range),max(par2_range))+1
+    31                                           
+    32                                                   #Creates the optimation tables using passed values
+    33                                                   self.optimization_table_max_drawdown = pd.DataFrame(0,index = par1_range,columns = par2_range)
+    34                                                   self.optimization_table_max_drawdown.index.name = str(par1)
+    35                                                   self.optimization_table_max_drawdown.columns.name = str(par2)
+    36                                           
+    37                                                   self.optimization_table_CAGR = pd.DataFrame(0,index = par1_range,columns = par2_range)
+    38                                                   self.optimization_table_CAGR.index.name = str(par1)
+    39                                                   self.optimization_table_CAGR.columns.name = str(par2)
+    40                                           
+    41                                                   self.optimization_table_CAGRMDD = pd.DataFrame(0,index = par1_range,columns = par2_range)
+    42                                                   self.optimization_table_CAGRMDD.index.name = str(par1)
+    43                                                   self.optimization_table_CAGRMDD.columns.name = str(par2)
+    44                                           
+    45                                                   #Determines number of backtests required
+    46                                                   no_of_iterations = len(par1_range)*len(par2_range)
+    47                                                   q = 1
+    48                                           
+    49                                                   #Runs the backtests and fills in the table
+    50                                                   for i, val1 in enumerate(par1_range):
+    51                                                       for j, val2 in enumerate(par2_range):
+    52                                                           print('starting iteration '+str(q)+' of '+str(no_of_iterations))
+    53                                                           opt = Backtest(strategy = strat_name)
+    54                                                           opt.datahandler.load_data_from_excel(data_file_path,bars_to_load)
+    55                                                           opt._optimize_strategy(val1,val2,cash)
+    56                                           
+    57                                                           opt.analysis._calc_CAGRMDD()
+    58                                           
+    59                                                           max_drawdown = opt.analysis.max_drawdown
+    60                                                           CAGR = opt.analysis.CAGR
+    61                                                           CAGRMDD = opt.analysis.CAGRMDD
+    62                                           
+    63                                                           self.optimization_table_max_drawdown.iloc[i,j] = max_drawdown
+    64                                                           self.optimization_table_CAGR.iloc[i,j] = CAGR
+    65                                                           self.optimization_table_CAGRMDD.iloc[i,j] = CAGRMDD
+    66                                           
+    67                                                           q+=1
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _create_pointers at line 73
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    73                                               def _create_pointers(self,backtest):
+    74                                                   self.portfolio = backtest.portfolio
+    75                                                   self.execution = backtest.execution
+    76                                                   self.datahandler = backtest.datahandler
+    77                                                   self.strategy = backtest.strategy
+    78                                                   self.account = backtest.account
+    79                                                   self.backtest = backtest
+
+Total time: 0.00281 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: analyze at line 81
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    81                                               def analyze(self):
+    82                                           
+    83                                                   '''Create an analysis class that inherits from this class and create an analyze function where you 
+    84                                                   write any metric you want to keep track of during the backtest'''
+    85                                           
+    86      4711       2810.0      0.6    100.0          pass
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _create_underwater_plot at line 88
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    88                                               def _create_underwater_plot(self):
+    89                                                   #Creates underwater plot of results
+    90                                                   underwater_plot = self.account.account_results.loc[:,['value']]
+    91                                                   underwater_plot.loc[:,'max'] = 0
+    92                                                   for i in range(len(self.portfolio.results)):
+    93                                                       max_val = self.portfolio.results.iloc[0:i,0].max()
+    94                                                       underwater_plot.iloc[i-1,1] = max_val
+    95                                                   underwater_plot.iloc[-1,1] = underwater_plot.iloc[:,0].max()
+    96                                                   self.underwater_plot = underwater_plot
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _calc_drawdown at line 98
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    98                                               def _calc_drawdown(self):
+    99                                                   #calculaes the max drawdown from the under water plot
+   100                                                   self._create_underwater_plot()
+   101                                                   self.drawdown_df = -(1-(self.underwater_plot.loc[:,'portfolio value']/self.underwater_plot.loc[:,'max']))
+   102                                                   self.max_drawdown = self.drawdown_df.min()
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _calc_CAGR at line 104
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   104                                               def _calc_CAGR(self):
+   105                                                   #Calculuates the CAGR
+   106                                                   end_val = self.account.account_results.loc[self.datahandler.strategy_end_date,'value']##fix this###
+   107                                                   start_val = self.account.account_results.loc[self.datahandler.strategy_start_date,'value']
+   108                                                   no_of_years = (self.account.account_results.index[-1] - self.account.account_results.index[0]).days/365
+   109                                                   self.CAGR = ((end_val/start_val)**(1/no_of_years))-1
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _calc_CAGRMDD at line 111
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   111                                               def _calc_CAGRMDD(self):
+   112                                                   ###Calculates the CAGR/MDD metric
+   113                                                   self._calc_drawdown()
+   114                                                   self._calc_CAGR()
+   115                                                   self.CAGRMDD = -(self.CAGR/self.max_drawdown)
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: results_overview at line 118
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   118                                               def results_overview(self):
+   119                                           
+   120                                                   '''This method will provide a tearsheet showing the overview of the results of a backtest'''
+   121                                           
+   122                                                   pass
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _create_pointers at line 129
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   129                                               def _create_pointers(self,backtest):
+   130                                                   self.portfolio = backtest.portfolio
+   131                                                   self.execution = backtest.execution
+   132                                                   self.datahandler = backtest.datahandler
+   133                                                   self.analysis = backtest.analysis
+   134                                                   self.account = backtest.account
+   135                                                   self.backtest = backtest
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: strategy_logic_begin at line 137
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   137                                               def strategy_logic_begin(self):
+   138                                           
+   139                                                   '''Code your beginning of bar logic here (if your strategy requires)'''
+   140                                           
+   141                                                   print('Make sure to add the parameter strategy = yourstrategyname when creating an instance of the Backtest class')
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: strategy_logic_end at line 143
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   143                                               def strategy_logic_end(self):
+   144                                           
+   145                                                   '''Code your end of bar logic here (if your strategy requires)'''
+   146                                           
+   147                                                   print('Make sure to add the parameter strategy = yourstrategyname when creating an instance of the Backtest class')
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _create_pointers at line 154
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   154                                               def _create_pointers(self,backtest):
+   155                                                   self.portfolio = backtest.portfolio
+   156                                                   self.execution = backtest.execution
+   157                                                   self.datahandler = backtest.datahandler
+   158                                                   self.analysis = backtest.analysis
+   159                                                   self.strategy = backtest.strategy
+   160                                                   self.backtest = backtest
+
+Total time: 0.061661 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _reset_account at line 162
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   162                                               def _reset_account(self, cash = 100000):
+   163                                                   #Creates an assets, liabilities, and equity dictionary. Creates two dataframe: account history and account results dataframe
+   164         1          5.0      5.0      0.0          self.assets = {'cash':cash}
+   165         1          4.0      4.0      0.0          self.liabilities = {'borrowed funds':0}
+   166         1          4.0      4.0      0.0          self.equity = {'account value':cash}
+   167         1      43496.0  43496.0     70.5          self.account_history = pd.DataFrame({'assets':[() for i in self.datahandler.date_index],'liabilities':[() for i in self.datahandler.date_index],'equity':[() for i in self.datahandler.date_index]},index = self.datahandler.date_index)
+   168         1        485.0    485.0      0.8          self.account_history.iloc[0,0] = (deepcopy(self.assets),)
+   169         1        258.0    258.0      0.4          self.account_history.iloc[0,1] = (deepcopy(self.liabilities),)
+   170         1        233.0    233.0      0.4          self.account_history.iloc[0,2] = (deepcopy(self.equity),)
+   171         1      17176.0  17176.0     27.9          self.account_results = pd.DataFrame({'cash':[() for i in self.datahandler.date_index],'value':[() for i in self.datahandler.date_index]},index = self.datahandler.date_index)
+
+Total time: 0.056879 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _remove_delisted_securities at line 173
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   173                                               def _remove_delisted_securities(self):
+   174                                                   #Handles the removal of delisted securities each bar
+   175                                                   #First handles securities that are owned and have been deslited
+   176      4711       3589.0      0.8      6.3          del_list1 = []
+   177     18840      12179.0      0.6     21.4          for asset in self.assets:
+   178     14129      11883.0      0.8     20.9              if asset != 'cash' and asset not in self.datahandler.available_symbols:
+   179        94         68.0      0.7      0.1                  del_list1.append(asset)
+   180        94        205.0      2.2      0.4                  if self.assets[asset]['value'] >= self.liabilities['borrowed funds']:
+   181        94        171.0      1.8      0.3                              self.assets['cash'] = self.assets['cash']+self.assets[asset]['value'] - self.liabilities['borrowed funds']
+   182        94         53.0      0.6      0.1                              self.liabilities['borrowed funds'] = 0
+   183                                                           else:
+   184                                                               self.liabilities['borrowed funds'] = self.liabilities['borrowed funds'] - self.assets[asset]['value']
+   185                                           
+   186      4805       2864.0      0.6      5.0          for asset in del_list1:
+   187        94        131.0      1.4      0.2              del self.assets[asset]
+   188                                           
+   189                                                   #Then removes securities that are shorted (liabilities) and have been delisted
+   190      4711       2316.0      0.5      4.1          del_list2 = []
+   191      9422       5561.0      0.6      9.8          for liability in self.liabilities:
+   192      4711       2687.0      0.6      4.7              if liability != 'borrowed funds' and liability not in self.datahandler.available_symbols:
+   193                                                           del_list2.append(liability)
+   194                                                           if self.liabilities[liability]['value'] <= self.assets['cash']:
+   195                                                                       self.assets['cash'] = self.assets['cash'] - self.liabilities[liability]['value'] 
+   196                                           
+   197                                                           else:
+   198                                                               self.liabilities['borrowed funds'] = self.liabilities['borrowed funds']+(self.liabilities[liability]['value']  - self.assets['cash'])
+   199                                                               self.assets['cash'] = 0
+   200                                           
+   201      4711       2591.0      0.5      4.6          for liability in del_list2:
+   202                                                       del self.liabilities[liability]
+   203                                           
+   204                                                   #Removes any delisted securities from pending order 
+   205      4711       9437.0      2.0     16.6          pending_orders = [order for order in self.execution.pending_orders if self.execution.pending_orders[order]['symbol'] in del_list1 or self.execution.pending_orders[order]['symbol'] in del_list2]
+   206      4711       3144.0      0.7      5.5          for order in pending_orders:
+   207                                                       del self.execution.pending_orders[order]
+
+Total time: 0.713826 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _update_account_begin at line 210
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   210                                               def _update_account_begin(self):
+   211                                                   #Updates the account at the beginning of the current bar
+   212                                           
+   213      4711       3848.0      0.8      0.5          values = []
+   214                                                   #update asset values
+   215     18746      13138.0      0.7      1.8          for asset in self.assets:
+   216     14035       8741.0      0.6      1.2              if asset != 'cash':
+   217      9324       6973.0      0.7      1.0                  asset_data = self.assets[asset]
+   218      9324     602380.0     64.6     84.4                  asset_data['value'] = asset_data['quantity']*self.datahandler._data_series[asset]['open'][self.datahandler.current_date]
+   219      9324      11350.0      1.2      1.6                  values.append(asset_data['value'])
+   220      9324      12786.0      1.4      1.8                  self.assets[asset].update(asset_data)
+   221                                           
+   222                                                   #update liability values
+   223      9422       6364.0      0.7      0.9          for liability in self.liabilities:
+   224      4711       3167.0      0.7      0.4              if liability != 'borrowed funds':
+   225                                                           liability_data = self.liabilities[liability]
+   226                                                           liability_data['value'] = liability_data['quantity']*self.datahandler._data_series[liability]['open'][self.datahandler.current_date]
+   227                                                           values.append(-liability_data['value'])
+   228                                                           self.liabilities[liability].update(liability_data)
+   229                                           
+   230                                                   #update equity values
+   231      4711      16617.0      3.5      2.3          self.equity['account value'] = sum(values)+self.assets['cash']-self.liabilities['borrowed funds']
+   232                                                   
+   233                                                   #Update the portfolio.positions tuple
+   234      4711      14057.0      3.0      2.0          self.portfolio.positions = [asset for asset in self.assets if asset != 'cash']
+   235      4711       8895.0      1.9      1.2          self.portfolio.positions = self.portfolio.positions + [liability for liability in self.liabilities if liability != 'borrowed funds']
+   236      4711       5510.0      1.2      0.8          self.portfolio.positions = tuple(self.portfolio.positions)
+
+Total time: 0.593675 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _update_account_end at line 238
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   238                                               def _update_account_end(self):
+   239                                                   #Updates the account at the end of the current bar
+   240                                           
+   241      4711       3028.0      0.6      0.5          values = []
+   242                                           
+   243                                                   #updates asset values
+   244     18746      12665.0      0.7      2.1          for asset in self.assets:
+   245     14035       8666.0      0.6      1.5              if asset != 'cash':
+   246      9324       6188.0      0.7      1.0                  asset_data = self.assets[asset]
+   247      9324     492854.0     52.9     83.0                  asset_data['value'] = asset_data['quantity']*self.datahandler._data_series[asset]['close'][self.datahandler.current_date]
+   248      9324      10518.0      1.1      1.8                  values.append(asset_data['value'])
+   249      9324      10531.0      1.1      1.8                  self.assets[asset].update(asset_data)
+   250                                           
+   251                                                   #updates the value of liabilities
+   252      9422       6306.0      0.7      1.1          for liability in self.liabilities:
+   253      4711       3122.0      0.7      0.5              if liability != 'borrowed funds':
+   254                                                           liability_data = self.liabilities[liability]
+   255                                                           liability_data['value'] = liability_data['quantity']*self.datahandler._data_series[liability]['close'][self.datahandler.current_date]
+   256                                                           values.append(-liability_data['value'])
+   257                                                           self.liabilities[liability].update(liability_data)
+   258                                           
+   259                                                   #updates equity value
+   260      4711      13520.0      2.9      2.3          self.equity['account value'] = sum(values)+self.assets['cash']-self.liabilities['borrowed funds']
+   261                                                   
+   262                                                   #updates the portfolio positions tuple
+   263      4711      12503.0      2.7      2.1          self.portfolio.positions = [asset for asset in self.assets if asset != 'cash']
+   264      4711       8330.0      1.8      1.4          self.portfolio.positions = self.portfolio.positions + [liability for liability in self.liabilities if liability != 'borrowed funds']
+   265      4711       5444.0      1.2      0.9          self.portfolio.positions = tuple(self.portfolio.positions)
+
+Total time: 6.34455 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _update_account_history_and_results at line 267
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   267                                               def _update_account_history_and_results(self):
+   268                                                   #updates the account history and account results dataframes
+   269                                           
+   270      4711    2547236.0    540.7     40.1          self.account_history['assets'][self.datahandler.current_date] = deepcopy(self.assets)
+   271      4711    1058556.0    224.7     16.7          self.account_history['liabilities'][self.datahandler.current_date] = deepcopy(self.liabilities)
+   272      4711    1084800.0    230.3     17.1          self.account_history['equity'][self.datahandler.current_date] = deepcopy(self.equity)
+   273      4711     782496.0    166.1     12.3          self.account_results['cash'][self.datahandler.current_date] = self.assets['cash']
+   274      4711     871466.0    185.0     13.7          self.account_results['value'][self.datahandler.current_date] = self.equity['account value']
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _calculate_change_cost_basis_and_new_ladder_FIFO at line 276
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   276                                               def _calculate_change_cost_basis_and_new_ladder_FIFO(self,shares,ladder):
+   277                                                   #Updates the cost basis and position ladder using the FIFO method
+   278                                           
+   279                                                   share_count = 0
+   280                                                   cost = 0
+   281                                                   change = 0
+   282                                           
+   283                                                   ###Needs additional documentation here###
+   284                                                   for i,pairs in enumerate(ladder):
+   285                                                       shs = pairs[0]
+   286                                                       cst = shs*pairs[1]
+   287                                                       share_count = share_count + shs
+   288                                                       cost = cst+cost
+   289                                                       if shares <= share_count:
+   290                                                           diff = share_count - shares
+   291                                                           change = cost - diff*pairs[1]
+   292                                                           break
+   293                                                           
+   294                                                   if diff != 0:
+   295                                                       ladder[i] = (diff,ladder[i][1])
+   296                                                       j = i-1
+   297                                                   else:
+   298                                                       j = i
+   299                                                       
+   300                                                   if j == 0:
+   301                                                       del ladder[j]
+   302                                                   else:
+   303                                                       ij = len(ladder) - j
+   304                                                       for s in range(j+1):
+   305                                                           del ladder[-ij]
+   306                                           
+   307                                                   return (change,ladder)
+
+Total time: 0.001618 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _update_account_with_order at line 309
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   309                                               def _update_account_with_order(self,order):
+   310                                                   #Updates the account whenever an order is executed
+   311                                           
+   312        96        158.0      1.6      9.8          if order['symbol'] not in self.assets and order['symbol'] not in self.liabilities:
+   313                                                       #There is not a position open for this symbol
+   314                                           
+   315        96         86.0      0.9      5.3              if order['quantity'] >0:
+   316                                                           #order creates a long position
+   317                                           
+   318        96         57.0      0.6      3.5                  quantity = order['quantity']
+   319        96        365.0      3.8     22.6                  value = abs(quantity*order['execution price'])
+   320        96         57.0      0.6      3.5                  cost_basis = value
+   321        96         82.0      0.9      5.1                  ladder = [(abs(quantity),order['execution price'])]
+   322       192        172.0      0.9     10.6                  pos_dict = {'value':value,
+   323        96         45.0      0.5      2.8                  'quantity':quantity,
+   324        96         96.0      1.0      5.9                  'start of position':self.datahandler.current_date,
+   325        96         53.0      0.6      3.3                  'most recent order':order,
+   326        96         48.0      0.5      3.0                  'cost basis':cost_basis,
+   327        96         49.0      0.5      3.0                  'ladder':ladder}
+   328                                           
+   329                                                           #determine whether position is bought with cash or a mixture of cash and borrowed funds
+   330        96        103.0      1.1      6.4                  if value <= self.assets['cash']:
+   331        96        129.0      1.3      8.0                      self.assets['cash'] = self.assets['cash'] - value
+   332                                                           else:
+   333                                                               self.liabilities['borrowed funds'] = self.liabilities['borrowed funds']+(value - self.assets['cash'])
+   334                                                               self.assets['cash'] = 0
+   335                                           
+   336                                                           #add position to assets account 
+   337        96        118.0      1.2      7.3                  self.assets[order['symbol']] = pos_dict
+   338                                           
+   339                                                       #Creates position dictionary for short positio
+   340                                                       elif order['quantity'] < 0:
+   341                                                           #order creates a short position
+   342                                           
+   343                                                           quantity = order['quantity']
+   344                                                           value = abs(quantity*order['execution price'])
+   345                                                           cost_basis = value
+   346                                                           ladder = [(abs(quantity),order['execution price'])]
+   347                                                           pos_dict = {'value':value,
+   348                                                           'quantity':quantity,
+   349                                                           'start of position':self.datahandler.current_date,
+   350                                                           'most recent order':order,
+   351                                                           'cost basis':cost_basis,
+   352                                                           'ladder':ladder}
+   353                                           
+   354                                                           #Updates cash account and liabilities account
+   355                                                           self.assets['cash'] = self.assets['cash']+value
+   356                                                           self.liabilities[order['symbol']] = pos_dict
+   357                                           
+   358                                                   else:
+   359                                                       #There is a current position open for this symbol
+   360                                                       if order['symbol'] in self.assets:
+   361                                                           #there is a long position for this symbol
+   362                                           
+   363                                                           if order['quantity'] + self.assets[order['symbol']]['quantity'] > 0:
+   364                                                               #current order still maintains long position
+   365                                           
+   366                                                               quantity = abs(order['quantity'] + self.assets[order['symbol']]['quantity'])
+   367                                                               value = quantity*order['execution price']
+   368                                                               if order['quantity'] > 0:
+   369                                                                   #order creates larger long position
+   370                                                                   cost_basis = abs(order['quantity'])*order['execution price'] + self.assets[order['symbol']]['cost basis']
+   371                                                                   ladder = self.assets[order['symbol']]['ladder'] + [(abs(order['quantity']),order['execution price'])]
+   372                                           
+   373                                                                   if (order['quantity']*order['execution price']) <= self.assets['cash']:
+   374                                                                       #order uses only cash
+   375                                                                       self.assets['cash'] = self.assets['cash'] - (order['quantity']*order['execution price'])
+   376                                           
+   377                                                                   else:
+   378                                                                       #order will use borrowed funds 
+   379                                                                       self.liabilities['borrowed funds'] = self.liabilities['borrowed funds']+((order['quantity']*order['execution price']) - self.assets['cash'])
+   380                                                                       self.assets['cash'] = 0
+   381                                           
+   382                                                               else:
+   383                                                                   #order decreases the size of the long position
+   384                                                                   cost_basis_change,ladder = self._calculate_change_cost_basis_and_new_ladder_FIFO(abs(order['quantity']),self.assets[order['symbol']]['ladder'])
+   385                                                                   cost_basis = self.assets[order['symbol']]['cost basis'] - cost_basis_change
+   386                                           
+   387                                                                   if (abs(order['quantity'])*order['execution price']) >= self.liabilities['borrowed funds']:
+   388                                                                       #order completely pays back borrowed funds
+   389                                                                       self.assets['cash'] = self.assets['cash']+((abs(order['quantity'])*order['execution price']) - self.liabilities['borrowed funds'])
+   390                                                                       self.liabilities['borrowed funds'] = 0
+   391                                                                   else:
+   392                                                                       #order does not completely pay back borrowed funds
+   393                                                                       self.liabilities['borrowed funds'] = self.liabilities['borrowed funds'] - ((abs(order['quantity'])*order['execution price']))
+   394                                           
+   395                                                               #finishes constructing the position dictionary
+   396                                                               pos_dict = {'value':value,
+   397                                                               'quantity':quantity,
+   398                                                               'most recent order':order,
+   399                                                               'cost basis':cost_basis,
+   400                                                               'ladder':ladder}
+   401                                           
+   402                                                               #updates the asset account with the new position dictionary
+   403                                                               self.assets[order['symbol']].update(pos_dict)
+   404                                           
+   405                                                           elif order['quantity'] + self.assets[order['symbol']]['quantity'] <0:
+   406                                                               #current order changes the long position to a short position
+   407                                           
+   408                                                               quantity = abs(order['quantity'] + self.assets[order['symbol']]['quantity'])
+   409                                                               value = quantity*order['execution price']
+   410                                                               cost_basis = value
+   411                                                               ladder = [(quantity,order['execution price'])]
+   412                                                               pos_dict = {'value':value,
+   413                                                               'quantity':quantity,
+   414                                                               'start of position':self.datahandler.current_date,
+   415                                                               'most recent order':order,
+   416                                                               'cost basis':cost_basis,
+   417                                                               'ladder':ladder}
+   418                                           
+   419                                                               if (self.assets[order['symbol']]['quantity']*order['execution price']) >= self.liabilities['borrowed funds']:
+   420                                                                   #order pays back all of the current borrowed funds
+   421                                                                   self.assets['cash'] = self.assets['cash'] + ((self.assets[order['symbol']]['quantity']*order['execution price']) - self.liabilities['borrowed funds']) + (quantity*order['execution price'])
+   422                                                                   self.liabilities['borrowed funds'] = 0
+   423                                                               else:
+   424                                                                   #order does not pay back all of the current borrowed funds
+   425                                                                   self.liabilities['borrowed funds'] = self.liabilities['borrowed funds'] - (self.assets[order['symbol']]['quantity']*order['execution price'])
+   426                                                                   #cash from short positions is placed in cash account and not used to pay back borrowed funds
+   427                                                                   ###Check to see if this is the correct logic###
+   428                                                                   self.assets['cash'] = self.assets['cash'] + quantity*order['execution price']
+   429                                           
+   430                                                               #removes the position from the assets and adds the new short position to the liabilities account
+   431                                                               del self.assets[order['symbol']]
+   432                                                               self.liabilities[order['symbol']] = pos_dict
+   433                                           
+   434                                           
+   435                                                           elif (order['quantity'] + self.assets[order['symbol']]['quantity'])==0:
+   436                                                               #order closes the long position
+   437                                           
+   438                                                               if (abs(order['quantity'])*order['execution price']) >= self.liabilities['borrowed funds']:
+   439                                                                       #order completely pays back borrowed funds
+   440                                                                   self.assets['cash'] = self.assets['cash']+((abs(order['quantity'])*order['execution price']) - self.liabilities['borrowed funds'])
+   441                                                                   self.liabilities['borrowed funds'] = 0
+   442                                                               else:
+   443                                                                   #order does not completely pay back borrowed funds
+   444                                                                   self.liabilities['borrowed funds'] = self.liabilities['borrowed funds'] - ((abs(order['quantity'])*order['execution price']))
+   445                                                               
+   446                                                               #removes the symbol from the asset account
+   447                                                               del self.assets[order['symbol']]
+   448                                           
+   449                                                       elif order['symbol'] in self.liabilities:
+   450                                                           #there is a short position for this symbol
+   451                                           
+   452                                                           if order['quantity'] + (-self.liabilities[order['symbol']]['quantity']) > 0:
+   453                                                               #order changes the short position to a long position
+   454                                           
+   455                                                               quantity = abs(order['quantity'] + (-self.liabilities[order['symbol']]['quantity']))
+   456                                                               value = quantity*order['execution price']
+   457                                                               cost_basis = value
+   458                                                               ladder = [(quantity,order['execution price'])]
+   459                                                               pos_dict = {'value':value,
+   460                                                               'quantity':quantity,
+   461                                                               'start of position':self.datahandler.current_date,
+   462                                                               'most recent order':order,
+   463                                                               'cost basis':cost_basis,
+   464                                                               'ladder':ladder}
+   465                                                               
+   466                                                               if (order['quantity']*order['execution price']) <= self.assets['cash']:
+   467                                                                   #order uses only cash to fund purchase
+   468                                                                   self.assets['cash'] = self.assets['cash'] - (order['quantity']*order['execution price'])
+   469                                           
+   470                                                               else:
+   471                                                                   #order uses borrowed funds to purchase
+   472                                                                   self.liabilities['borrowed funds'] = self.liabilities['borrowed funds']+((order['quantity']*order['execution price']) - self.assets['cash'])
+   473                                                                   self.assets['cash'] = 0
+   474                                           
+   475                                                               #removes the symbol from liabilities and adds it to the assets
+   476                                                               del self.liabilities[order['symbol']]
+   477                                                               self.assets[order['symbol']] = pos_dict
+   478                                           
+   479                                           
+   480                                                           elif order['quantity'] + (-self.liabilities[order['symbol']]['quantity']) <0:
+   481                                                               #current order maintains short position
+   482                                           
+   483                                                               quantity = abs(order['quantity'] + (-self.liabilities[order['symbol']]['quantity']))
+   484                                                               value = quantity*order['execution price']
+   485                                                               if order['quantity'] > 0:
+   486                                                                   #current order reduces the size of the short position
+   487                                                                   cost_basis_change,ladder = self._calculate_change_cost_basis_and_new_ladder_FIFO(abs(order['quantity']),self.liabilities[order['symbol']]['ladder'])
+   488                                                                   cost_basis = self.liabilities[order['symbol']]['cost basis'] - cost_basis_change
+   489                                                                   if (order['quantity']*order['execution price']) <= self.assets['cash']:
+   490                                                                       #order uses only cash for purchase
+   491                                                                       self.assets['cash'] = self.assets['cash'] - (order['quantity']*order['execution price'])
+   492                                           
+   493                                                                   else:
+   494                                                                       #order uses borrowed funds for purchase
+   495                                                                       self.liabilities['borrowed funds'] = self.liabilities['borrowed funds']+((order['quantity']*order['execution price']) - self.assets['cash'])
+   496                                                                       self.assets['cash'] = 0
+   497                                                                   
+   498                                                               else:
+   499                                                                   #order increases size of short position
+   500                                                                   cost_basis = abs(order['quantity'])*order['execution price'] + self.liabilities[order['symbol']]['cost basis']
+   501                                                                   ladder = self.liabilities[order['symbol']]['ladder'] + [(abs(order['quantity']),order['execution price'])]
+   502                                                                   self.assets['cash'] = self.assets['cash']+abs(order['quantity'])*order['execution price']
+   503                                           
+   504                                                               #updates position dictionary
+   505                                                               pos_dict = {'value':value,
+   506                                                               'quantity':quantity,
+   507                                                               'most recent order':order,
+   508                                                               'cost basis':cost_basis,
+   509                                                               'ladder':ladder}
+   510                                           
+   511                                                               #updates the liabilities account
+   512                                                               self.liabilities[order['symbol']].update(pos_dict)
+   513                                           
+   514                                                           elif order['quantity'] + (-self.liabilities[order['symbol']]['quantity'])==0:
+   515                                                               #order closes the short position
+   516                                           
+   517                                                               if (order['quantity']*order['execution price']) <= self.assets['cash']:
+   518                                                                   #order uses only cash to close short
+   519                                                                       self.assets['cash'] = self.assets['cash'] - (order['quantity']*order['execution price'])
+   520                                           
+   521                                                               else:
+   522                                                                   #order uses borrowed funds to close short
+   523                                                                   ###Is this the correct logic?###
+   524                                                                   self.liabilities['borrowed funds'] = self.liabilities['borrowed funds']+((order['quantity']*order['execution price']) - self.assets['cash'])
+   525                                                                   self.assets['cash'] = 0
+   526                                           
+   527                                                               #removes order from the liabilities account
+   528                                                               del self.liabilities[order['symbol']]
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _create_pointers at line 534
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   534                                               def _create_pointers(self,backtest):
+   535                                                   self.execution = backtest.execution
+   536                                                   self.datahandler = backtest.datahandler
+   537                                                   self.strategy = backtest.strategy
+   538                                                   self.analysis = backtest.analysis
+   539                                                   self.account = backtest.account
+   540                                                   self.backtest = backtest
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _reset_portfolio at line 542
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   542                                               def _reset_portfolio(self):
+   543                                                   #resets portfolio
+   544                                                   self.positions = ()
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _create_pointers at line 550
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   550                                               def _create_pointers(self,backtest):
+   551                                                   self.portfolio = backtest.portfolio
+   552                                                   self.datahandler = backtest.datahandler
+   553                                                   self.strategy = backtest.strategy
+   554                                                   self.analysis = backtest.analysis
+   555                                                   self.account = backtest.account
+   556                                                   self.backtest = backtest
+
+Total time: 2e-06 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _clear_pending_orders at line 558
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   558                                               def _clear_pending_orders(self):
+   559                                                   #resets pending orders dict and the most recent order ID
+   560         1          1.0      1.0     50.0          self.pending_orders = {}
+   561         1          1.0      1.0     50.0          self._most_recent_ID = 0
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _add_pending_order at line 563
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   563                                               def _add_pending_order(self,order):
+   564                                                   #adds an order to the pending orders dictionary
+   565                                                   order_ID = order['Order ID']
+   566                                                   self.pending_orders[order_ID] = deepcopy(order)
+
+Total time: 0.002857 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _execute_order at line 568
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   568                                               def _execute_order(self,order):
+   569                                                   #executes order by updating the account with an order
+   570        96       2857.0     29.8    100.0          self.account._update_account_with_order(order)
+
+Total time: 0.065772 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _scan_and_execute_pending_orders at line 572
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   572                                               def _scan_and_execute_pending_orders(self):
+   573                                                   #scans the pending orders dict and executes order if necessary
+   574                                           
+   575                                                   #list used to keep track of orders that need to be removed from pending list
+   576     18840      11885.0      0.6     18.1          removal_list = []
+   577     18840      13144.0      0.7     20.0          for ID in self.pending_orders:
+   578                                                       order = self.pending_orders[ID]
+   579                                                       order_type = order['order type']
+   580                                                       
+   581                                                       if order_type == 'market':
+   582                                                           market_order_type = order['desired execution time']
+   583                                                           if market_order_type == 'open':
+   584                                                               if self.datahandler._tob == 'begin':
+   585                                                                   #chain of if/else statements ensure the market order is only executed at the beginning of the bar
+   586                                                                   sym = order['symbol']
+   587                                                                   sym_open_data = self.datahandler._data_series[sym]['open']
+   588                                                                   execution_price = sym_open_data[self.datahandler.current_date]
+   589                                                                   order.update({'execution price':execution_price, 'date of execution':self.datahandler.current_date,'execution side':'begin'})
+   590                                                                   self._update_order_series(order)
+   591                                                                   self._execute_order(order)
+   592                                                                   removal_list.append(ID)
+   593                                                           elif market_order_type == 'close':
+   594                                                               if self.datahandler._tob == 'end':
+   595                                                                   #chain of if/else statements ensure the market order is only executed at the end of the bar
+   596                                                                   sym = order['symbol']
+   597                                                                   sym_close_data = self.datahandler._data_series[sym]['close']
+   598                                                                   execution_price = sym_close_data[self.datahandler.current_date]
+   599                                                                   order.update({'execution price':execution_price, 'date of execution':self.datahandler.current_date,'execution side':'end'})
+   600                                                                   self._update_order_series(order)
+   601                                                                   self._execute_order(order)
+   602                                                                   removal_list.append(ID)
+   603                                           
+   604                                                   #removes pending orders that have been executed
+   605     18840      40743.0      2.2     61.9          self._update_pending_orders(removal_list)
+
+Total time: 0.009646 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _update_pending_orders at line 607
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   607                                               def _update_pending_orders(self,removal_list):
+   608                                                   #removes pending orders that have been executed
+   609     18840       9646.0      0.5    100.0          for ID in removal_list:
+   610                                                       del self.pending_orders[ID]
+
+Total time: 0.000147 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _gen_order_ID at line 612
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   612                                               def _gen_order_ID(self):
+   613                                                   #generates a new order ID. All order IDs are unique
+   614        96         42.0      0.4     28.6          ID = self._most_recent_ID
+   615        96         68.0      0.7     46.3          self._most_recent_ID += 1
+   616        96         37.0      0.4     25.2          return ID
+
+Total time: 0.031116 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _update_order_series at line 618
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   618                                               def _update_order_series(self,order):
+   619                                                   #updates new order series
+   620                                           
+   621        96       5875.0     61.2     18.9          if self.order_series.loc[self.datahandler.current_date] != ('No orders',):
+   622        48      13145.0    273.9     42.2              self.order_series.loc[self.datahandler.current_date] = (self.order_series.loc[self.datahandler.current_date] +(order,))
+   623                                           
+   624        48       2361.0     49.2      7.6          elif self.order_series.loc[self.datahandler.current_date] == ('No orders',):
+   625        48       9735.0    202.8     31.3              self.order_series.loc[self.datahandler.current_date] = (order,)
+
+Total time: 0.037318 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _update_pending_order_series at line 627
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   627                                               def _update_pending_order_series(self,order):
+   628                                                   #updates the pending order series
+   629                                           
+   630        96       8548.0     89.0     22.9          if self.pending_order_series.loc[self.datahandler.current_date] != ('No pending orders',):
+   631        48      14320.0    298.3     38.4              self.pending_order_series.loc[self.datahandler.current_date] = (self.pending_order_series.loc[self.datahandler.current_date] +(order,))
+   632                                           
+   633        48       3627.0     75.6      9.7          elif self.pending_order_series.loc[self.datahandler.current_date] == ('No pending orders',):
+   634        48      10823.0    225.5     29.0              self.pending_order_series.loc[self.datahandler.current_date] = (order,)
+
+Total time: 0.085232 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: market_order at line 636
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   636                                               def market_order(self,symbol,quantity,time):
+   637                                           
+   638                                                   '''This method is responsible for generating an order dict for a market order
+   639                                           
+   640                                                   inputs:
+   641                                                   symbol (string): symbol (stock ticker, forex pari, etc.)
+   642                                                   quantity (int): units of symbol to order. Use positive (negative) values for long (short) positions or covering (closing) short (long) positions.
+   643                                                   time (string): 'begin' or 'end', determines time of bar the order should be executed'''
+   644                                           
+   645        96        405.0      4.2      0.5          ID = self._gen_order_ID()
+   646                                           
+   647                                                   #creates new order dict
+   648       192        179.0      0.9      0.2          order = {'Order ID': ID,
+   649        96         76.0      0.8      0.1          'date of placement':self.datahandler.current_date,
+   650        96         62.0      0.6      0.1          'time of placement':self.datahandler._tob,
+   651        96         54.0      0.6      0.1          'order type':'market',
+   652        96         54.0      0.6      0.1          'symbol':symbol,
+   653        96         61.0      0.6      0.1          'quantity':quantity,
+   654        96         67.0      0.7      0.1          'desired execution time':time}
+   655                                           
+   656                                                   #adds order to the pending order series. This is not the pending order dict. This is for history purposes
+   657        96      37817.0    393.9     44.4          self._update_pending_order_series(order)
+   658                                                   
+   659                                                   #If/else chain handles whether order should be executed immediately or placed into the pending order dict
+   660        96        151.0      1.6      0.2          if order['desired execution time'] == 'open':
+   661                                                       if order['time of placement'] == 'begin':
+   662                                                           sym = order['symbol']
+   663                                                           sym_open_data = self.datahandler._data_series[sym]['open']
+   664                                                           execution_price = sym_open_data.loc[self.datahandler.current_date]
+   665                                                           order.update({'execution price':execution_price, 'date of execution':self.datahandler.current_date,'execution side':'begin'})
+   666                                                           self._update_order_series(order)
+   667                                                           self._execute_order(order)
+   668                                                           
+   669                                                       elif order['time of placement'] == 'end':
+   670                                                           self._update_pending_order_series(order)
+   671                                                           most_recent_order = (self.pending_order_series.loc[self.datahandler.current_date])[-1]
+   672                                                           self._add_pending_order(most_recent_order)
+   673                                                           
+   674                                                           
+   675        96         84.0      0.9      0.1          elif order['desired execution time'] == 'close':
+   676        96         66.0      0.7      0.1              if order['time of placement'] == 'end':
+   677        96         65.0      0.7      0.1                  sym = order['symbol']
+   678        96       3924.0     40.9      4.6                  sym_close_data = self.datahandler._data_series[sym]['close']
+   679        96       7175.0     74.7      8.4                  execution_price = sym_close_data.loc[self.datahandler.current_date]
+   680        96        273.0      2.8      0.3                  order.update({'execution price':execution_price, 'date of execution':self.datahandler.current_date,'execution side':'end'})
+   681        96      31595.0    329.1     37.1                  self._update_order_series(order)
+   682        96       3124.0     32.5      3.7                  self._execute_order(order)
+   683                                                           
+   684                                                       elif order['time of placement'] == 'begin':
+   685                                                           self._update_pending_order_series(order)
+   686                                                           most_recent_order = (self.pending_order_series.loc[self.datahandler.current_date])[-1]
+   687                                                           self._add_pending_order(most_recent_order)
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: __init__ at line 694
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   694                                               def __init__(self):
+   695                                                   #creates lists used for determining what time of bar a data series should be updated
+   696                                                   self.begin_data_list = []
+   697                                                   self.end_data_list = []
+   698                                           
+   699                                                   self.begin_data_series_list = []
+   700                                                   self.end_data_series_list = []
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _create_pointers at line 702
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   702                                               def _create_pointers(self,backtest):
+   703                                                   self.portfolio = backtest.portfolio
+   704                                                   self.execution = backtest.execution
+   705                                                   self.strategy = backtest.strategy
+   706                                                   self.analysis = backtest.analysis
+   707                                                   self.account = backtest.account
+   708                                                   self.backtest = backtest
+
+Total time: 3.7e-05 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _create_date_iter at line 710
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   710                                               def _create_date_iter(self,bars_to_load):
+   711                                                   #creates bars to load variable, creates date iter object, and creates the tob (time of bar) variable
+   712         1          3.0      3.0      8.1          self._bars_to_load = bars_to_load
+   713         1         32.0     32.0     86.5          self._date_iter = iter(self.date_index)
+   714         1          2.0      2.0      5.4          self._tob = 'end'
+
+Total time: 0.009877 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _update_time at line 716
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   716                                               def _update_time(self):
+   717      9422       5366.0      0.6     54.3          if self._tob == 'end':
+   718      4711       2528.0      0.5     25.6              self._tob = 'begin'
+   719                                                   else:
+   720      4711       1983.0      0.4     20.1              self._tob = 'end'
+
+Total time: 3.33977 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _update_date_symbols at line 722
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   722                                               def _update_date_symbols(self):
+   723                                                   #updates the current date and generates a list of symbols available for that date
+   724      4711      27910.0      5.9      0.8          self.current_date = next(self._date_iter)
+   725      4711       7586.0      1.6      0.2          if self.current_date >= self.strategy_start_date:
+   726      4711       3507.0      0.7      0.1              self.available_symbols = []
+   727     14133       8583.0      0.6      0.3              for sym in self.sym_list:
+   728      9422     546868.0     58.0     16.4                  if self.current_date in self._data_series[sym].index:
+   729                                                               ###Find a less time consuming way to do this###
+   730      9422     127039.0     13.5      3.8                      temp_df = self._data_series[sym]
+   731      9422    2591953.0    275.1     77.6                      amount_of_data = len(temp_df.index[temp_df.index <= self.current_date])
+   732      9422      12772.0      1.4      0.4                      if amount_of_data >=self._bars_to_load:
+   733      9324       8104.0      0.9      0.2                          self.available_symbols.append(sym)
+   734      4711       5446.0      1.2      0.2              self.available_symbols = tuple(self.available_symbols)
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: add_data_series at line 736
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   736                                               def add_data_series(self,series,beginning_update_list = []):
+   737                                           
+   738                                                   '''This method is used for adding data series before the backtest. You must run this method twice: 
+   739                                                   once to add the open_series and another time to add the close_series
+   740                                           
+   741                                                   inputs:
+   742                                                   series_name (string): name of the series, should have the format 'nameofseries_series'
+   743                                                   series (pandas series): pandas series containing data. Index of this series is the symbols and each value
+   744                                                       in the series is another pandas series with a date index and containing data for that particular symbol
+   745                                                   time_to_update (string): must have value 'begin' or 'end'. Default is 'end'. Determines what time of bar this data 
+   746                                                   series will be updated'''
+   747                                           
+   748                                                   if 'open' not in beginning_update_list:
+   749                                                       beginning_update_list.append('open')
+   750                                           
+   751                                                   self._beginning_update_list = beginning_update_list
+   752                                           
+   753                                                   self._data_series = series
+   754                                           
+   755                                                   #creates symbol list, start date, end date, and date index variables from the close series
+   756                                                   self.strategy_start_date = min([series.index[0] for series in self._data_series])
+   757                                                   self.strategy_end_date = max([series.index[-1] for series in self._data_series])
+   758                                                   self.sym_list = list(self._data_series.index)
+   759                                                   self.date_index = pd.Index([])
+   760                                                   for dataframe in self._data_series:
+   761                                                       self.date_index = self.date_index.append(dataframe.index)
+   762                                                   self.date_index = self.date_index.unique()
+
+Total time: 1.28964 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: data at line 764
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   764                                               def data(self,symbol,data_type,number_of_bars):
+   765      4710       3780.0      0.8      0.3          if number_of_bars > self._bars_to_load:
+   766                                                       raise ValueError('number_of_bars exceeds the specified bars to load')
+   767                                           
+   768      4710     101209.0     21.5      7.8          temp_slice = self._data_series[symbol][data_type]
+   769      4710     111135.0     23.6      8.6          current_date_location = temp_slice.index.get_loc(self.current_date)
+   770      4710       4347.0      0.9      0.3          start_location = current_date_location+1-number_of_bars
+   771      4710       2828.0      0.6      0.2          if self._tob == 'begin' and data_type in self._beginning_update_list:
+   772                                                       temp_slice = temp_slice[start_location:current_date_location+1]
+   773      4710       2069.0      0.4      0.2          elif self._tob == 'begin' and data_type not in self._beginning_update_list:
+   774                                                       temp_slice = temp_slice[start_location-1:current_date_location]
+   775      4710       2121.0      0.5      0.2          elif self._tob == 'end':
+   776      4710    1057977.0    224.6     82.0              temp_slice = temp_slice[start_location:current_date_location+1]
+   777      4710       4176.0      0.9      0.3          return temp_slice
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: __init__ at line 783
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   783                                               def __init__(self,strategy = Strategy,portfolio = Portfolio,
+   784                                                            execution = Execution, datahandler = DataHandler,
+   785                                                            analysis = Analysis, optimize = Optimize, account = Account):
+   786                                           
+   787                                                   self.strategy = strategy()
+   788                                                   self.portfolio = portfolio()
+   789                                                   self.execution = execution()
+   790                                                   self.datahandler = datahandler()
+   791                                                   self.analysis = analysis()
+   792                                                   self.account = account()
+   793                                           
+   794                                                   self.strategy._create_pointers(self)
+   795                                                   self.portfolio._create_pointers(self)
+   796                                                   self.datahandler._create_pointers(self)
+   797                                                   self.execution._create_pointers(self)
+   798                                                   self.analysis._create_pointers(self)
+   799                                                   self.account._create_pointers(self)
+
+Total time: 13.2401 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: test_strategy at line 801
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   801                                               def test_strategy(self,bars_to_load,cash = 100000):
+   802                                           
+   803                                                   '''tests the strategy
+   804                                           
+   805                                                   inputs:
+   806                                                   bars_to_load (int): number of data bars to load at a time during the backtest. Usually the amount of data required for the longest indicator
+   807                                                   cash (float): amount of cash to start the test with. Default is 100,000'''
+   808                                           
+   809                                                   #creates the date iter object        
+   810         1         55.0     55.0      0.0          self.datahandler._create_date_iter(bars_to_load)
+   811                                           
+   812                                                   #resets the account
+   813         1      61701.0  61701.0      0.5          self.account._reset_account(cash)
+   814                                                   
+   815                                                   #clears any pending orders
+   816         1         10.0     10.0      0.0          self.execution._clear_pending_orders()
+   817                                           
+   818                                                   #creates execution order series for history purposes
+   819         1       3005.0   3005.0      0.0          self.execution.order_series = pd.Series([('No orders',) for x in range(len(self.datahandler.date_index))], index = self.datahandler.date_index)
+   820                                                   
+   821                                                   #creates execution pending order series for history purposes
+   822         1       2227.0   2227.0      0.0          self.execution.pending_order_series = pd.Series([('No pending orders',) for x in range(len(self.datahandler.date_index))],index = self.datahandler.date_index)
+   823                                           
+   824                                                   #main loop of backtester
+   825                                                   ###Improve this with an apply method###
+   826      4712     143661.0     30.5      1.1          for i in tqdm(range(len(self.datahandler.date_index))):
+   827                                                       #updates the current date and list of available symbols
+   828      4711    3400969.0    721.9     25.7              self.datahandler._update_date_symbols() 
+   829                                                       #removes delisted securities from account and pending orders
+   830      4711     113049.0     24.0      0.9              self.account._remove_delisted_securities()
+   831                                                       #updates data series at beginning of bar
+   832      4711      17620.0      3.7      0.1              self.datahandler._update_time()
+   833                                                       #updates the account to reflect new data
+   834      4711     804842.0    170.8      6.1              self.account._update_account_begin()
+   835      4711       8137.0      1.7      0.1              if self.datahandler.current_date>self.datahandler.strategy_start_date:
+   836                                                           #current date is past strategy start date so the strategy has enough data to begin
+   837                                                           #executes pending orders if necessary
+   838      4710      38553.0      8.2      0.3                  self.execution._scan_and_execute_pending_orders()
+   839                                                           #executes logic at the beginning of bar
+   840      4710       8234.0      1.7      0.1                  self.strategy.strategy_logic_begin()
+   841                                                           #executes pending orders if necessary
+   842      4710      28330.0      6.0      0.2                  self.execution._scan_and_execute_pending_orders()
+   843                                                       #updates data series at end of bar
+   844      4711      15261.0      3.2      0.1              self.datahandler._update_time()
+   845                                                       #updates account to reflect new data
+   846      4711     681526.0    144.7      5.1              self.account._update_account_end()
+   847      4711       6943.0      1.5      0.1              if self.datahandler.current_date>self.datahandler.strategy_start_date: ####think about implications of > vs >=###
+   848                                                           #executes pending orders if necessary
+   849      4710      32585.0      6.9      0.2                  self.execution._scan_and_execute_pending_orders()
+   850                                                           #executes strategy logic at end of bar
+   851      4710    1431972.0    304.0     10.8                  self.strategy.strategy_logic_end()
+   852                                                           #executes pending orders if necessary
+   853      4710      39031.0      8.3      0.3                  self.execution._scan_and_execute_pending_orders()
+   854                                                       #updates the account history and results dataframes
+   855      4711    6384189.0   1355.2     48.2              self.account._update_account_history_and_results()
+   856                                                       #runs the analyze function is there is data or metrics that the user wants to calculate/log
+   857      4711      18195.0      3.9      0.1              self.analysis.analyze()
+
+Total time: 0 s
+File: /home/jacob/anaconda3/lib/python3.8/site-packages/backtest/backtest.py
+Function: _optimize_strategy at line 859
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   859                                               def _optimize_strategy(self,bars_to_load, val1,val2,cash = 100000):
+   860                                           
+   861                                                   '''Has not been fully tested'''
+   862                                           
+   863                                                   self.datahandler._create_date_iter(bars_to_load)
+   864                                           
+   865                                                   self.account._reset_account(cash)
+   866                                                   
+   867                                                   self.execution._clear_pending_orders()
+   868                                           
+   869                                                   self.execution.order_series = pd.Series([('No orders',) for x in range(len(self.datahandler.date_index))], index = self.datahandler.date_index)
+   870                                                   
+   871                                                   self.execution.pending_order_series = pd.Series([('No pending orders',) for x in range(len(self.datahandler.date_index))],index = self.datahandler.date_index)
+   872                                           
+   873                                                   for i in tqdm(range(len(self.datahandler.date_index))):
+   874                                                       self.datahandler._update_date_symbols() #updates the current date and list of available symbols
+   875                                                       self.account._remove_delisted_securities()
+   876                                                       self.datahandler._update_begin_bar_data() #updates only open data for current date, allows for begin of bar trading
+   877                                                       self.account._update_account_begin()
+   878                                                       if self.datahandler.current_date>self.datahandler.strategy_start_date:
+   879                                                           self.execution._scan_and_execute_pending_orders()
+   880                                                           self.strategy.strategy_logic_begin()
+   881                                                           self.execution._scan_and_execute_pending_orders()
+   882                                                       self.datahandler._update_end_bar_data()
+   883                                                       self.account._update_account_end()
+   884                                                       if self.datahandler.current_date>self.datahandler.strategy_start_date: #think about implications of > vs >=
+   885                                                           self.execution._scan_and_execute_pending_orders()
+   886                                                           self.strategy.strategy_logic_end()
+   887                                                           self.execution._scan_and_execute_pending_orders()
+   888                                                       self.account._update_account_history_and_results()
+   889                                                       self.analysis.analyze()
