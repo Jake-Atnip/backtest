@@ -1,11 +1,7 @@
-# backtest alpha 1.0.0
+# backtest 1.0.0
 In progress. Python backtester dependent soley on pandas and numpy. Right now this backtester is meant for equities and currencies.
 
 To do list:
 1. Improve documentation
-2. Clean up Datahandler class
-3. Consider alternative data structure for historical data
-4. Add limit and stop orders
-5. Cythonize code to improve execution time
-6. Add flowchart as a form of "visual" documentation
-7. Add method for loading pandas series containing alternate data (i.e. fundamentals)
+2. Add limit and stop orders
+3. Add flowchart as a form of "visual" documentation
